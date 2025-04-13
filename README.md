@@ -4,14 +4,14 @@ Here’s a professional and clean `README.md` file for your **Face Swap** projec
 
 ---
 
-```markdown
+``markdown
 # Face Swap using Dlib and OpenCV
 
 This project demonstrates a basic **face swapping** application using Python, OpenCV, and Dlib. It detects facial landmarks and performs a basic face mask transfer between two input images.
 
 ## 📁 Project Structure
 
-```
+``
 .
 ├── Face_Swap.ipynb           # Jupyter Notebook demonstrating face swapping
 ├── face_swap_utils.py        # Python utility functions for face detection and swapping
