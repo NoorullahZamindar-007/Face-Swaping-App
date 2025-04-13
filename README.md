@@ -3,7 +3,7 @@ face_swap_app using flask
 Here’s a professional and clean `README.md` file for your **Face Swap** project to upload to GitHub:
 
 ---  
-this is a good make and also have try to make it more butifull and try to
+this is a good make and also have try to make it more butifull and try
 ``markdown                  
 # Face Swap using Dlib and OpenCV            
 
