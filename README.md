@@ -40,20 +40,20 @@ This project demonstrates a basic **face swapping** application using Python, Op
 
 ### Install dependencies
 
-```bash
+``bash
 pip install -r requirements.txt
-```
+``
 
 > Note: You need to download the `shape_predictor_68_face_landmarks.dat` file from [dlib's official model repository](http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2) and place it in the project directory.
 
 ## 📝 Usage
 
 ### Run from script
-```python
+``python
 from face_swap_utils import face_swap
 
 face_swap("image1.jpg", "image2.jpg", "output.jpg")
-```
+``
 
 ### Or use the Jupyter Notebook
 Open the notebook `Face_Swap.ipynb` and run the cells to see the step-by-step process.
@@ -79,8 +79,7 @@ Freelancer | AI Developer | Python Enthusiast
 ## 📝 License
 
 This project is open-source and free to use under the MIT License.
-```
+``
 
 ---
 
-Would you also like a `requirements.txt` file for this project?
