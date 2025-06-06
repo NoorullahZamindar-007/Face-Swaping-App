@@ -25,7 +25,7 @@ This project demonstrates a basic **face swapping** application using Python, Op
 
 ## ⚙️ Features
 
-- Detect faces using `dlib`'s HOG-based face detector
+- Detect faces using `dlib`'s HOG-based face detector   
 - Extract facial landmarks using the 68-point model
 - Perform Delaunay triangulation for accurate face mapping
 - Apply a face mask from one image to another
