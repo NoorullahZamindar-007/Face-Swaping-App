@@ -12,7 +12,7 @@ This project demonstrates a basic **face swapping** application using Python, Op
 ## 📁 Project Structure
                                                
 ``                                    
-
+                      
 ├── Face_Swap.ipynb           # Jupyter Notebook demonstrating face swapping                   
                                                  
 ├── face_swap_utils.py        # Python utility functions for face detection and swapping          
