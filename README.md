@@ -37,7 +37,7 @@ This project demonstrates a basic **face swapping** application using Python, Op
 - OpenCV
 - Dlib
 - NumPy
-
+                   
 ### Install dependencies
 
 ``bash
