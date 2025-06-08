@@ -22,7 +22,7 @@ This project demonstrates a basic **face swapping** application using Python, Op
 └── shape_predictor_68_face_landmarks.dat  # Required model (Not included due to size)                                 
 
 ``      
-                       
+                                       
 ## ⚙️ Features
 
 - Detect faces using `dlib`'s HOG-based face detector   
