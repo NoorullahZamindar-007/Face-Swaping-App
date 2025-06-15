@@ -1,4 +1,4 @@
- # Face-Swaping-App
+  # Face-Swaping-App
 face_swap_app using flask               
 Here’s a professional and clean `README.md` file for your **Face Swap** project to upload to GitHub:
 
@@ -11,7 +11,7 @@ This project demonstrates a basic **face swapping** application using Python, Op
                                        
 ## 📁 Project Structure         
                                                                                                                                                          
-``                                                                                                                                                                                                                   
+``                                                                                                                                                                                                                                   
                                                                                                                                                                                                                                                                                           
 ├── Face_Swap.ipynb           # Jupyter Notebook demonstrating face swapping                                                                    
                                                                                                                              
