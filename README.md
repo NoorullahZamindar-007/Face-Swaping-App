@@ -1,4 +1,4 @@
-  # Face-Swaping-App
+   # Face-Swaping-App
 face_swap_app using flask               
 Here’s a professional and clean `README.md` file for your **Face Swap** project to upload to GitHub:
 
@@ -8,7 +8,7 @@ Here’s a professional and clean `README.md` file for your **Face Swap** projec
 # Face Swap using Dlib and OpenCV                    
 
 This project demonstrates a basic **face swapping** application using Python, OpenCV, and Dlib. It detects facial landmarks and performs a basic face mask transfer between two input images.                   
-                                                          
+                                                              
                                                                                                                                                                                 
 ``                                                                                                                                                                                                                                                                                                                                   
                                                                                                                                                                                                                                                                                                                                                   
