@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import cv2
 from face_swap_utils import face_swap 
-from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename 
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads'
