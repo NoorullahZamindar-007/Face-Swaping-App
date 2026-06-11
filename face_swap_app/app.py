@@ -27,7 +27,7 @@ def index():
 
             return render_template('index.html', result_image=result_path)
 
-    return render_template('index.html', result_image=None)
+    return render_template('index.html', result_image=None) 
 
 if __name__ == '__main__':
     app.run(debug=True)
