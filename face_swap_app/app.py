@@ -13,7 +13,7 @@ app.config['RESULT_FOLDER'] = RESULT_FOLDER
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST': 
-        file1 = request.files['image1']
+        file1 = request.files['image1'] 
         file2 = request.files['image2']
 
         if file1 and file2:
