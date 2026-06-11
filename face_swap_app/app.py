@@ -11,7 +11,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['RESULT_FOLDER'] = RESULT_FOLDER
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
+def index(): 
     if request.method == 'POST': 
         file1 = request.files['image1'] 
         file2 = request.files['image2']
