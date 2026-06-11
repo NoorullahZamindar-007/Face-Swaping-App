@@ -23,7 +23,7 @@ def index():
             file2.save(path2)
 
             result_path = os.path.join(app.config['RESULT_FOLDER'], 'swapped.jpg')
-            face_swap(path1, path2, result_path) 
+            face_swap(path1, path2, result_path)  
 
             return render_template('index.html', result_image=result_path)
 
