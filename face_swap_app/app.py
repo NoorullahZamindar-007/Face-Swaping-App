@@ -15,7 +15,7 @@ def index():
     if request.method == 'POST': 
         file1 = request.files['image1'] 
         file2 = request.files['image2']
-
+ 
         if file1 and file2:
             path1 = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file1.filename))
             path2 = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file2.filename))
