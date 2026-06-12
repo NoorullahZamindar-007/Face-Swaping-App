@@ -20,7 +20,7 @@ def index():
             path1 = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file1.filename))
             path2 = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file2.filename)) 
             file1.save(path1) 
-            file2.save(path2)
+            file2.save(path2) 
 
             result_path = os.path.join(app.config['RESULT_FOLDER'], 'swapped.jpg')
             face_swap(path1, path2, result_path)   
