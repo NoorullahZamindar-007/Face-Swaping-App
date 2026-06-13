@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads'
 RESULT_FOLDER = 'static/result'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER 
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  
 app.config['RESULT_FOLDER'] = RESULT_FOLDER  
 
 @app.route('/', methods=['GET', 'POST'])
