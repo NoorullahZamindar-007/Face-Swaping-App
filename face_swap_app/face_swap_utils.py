@@ -1,9 +1,36 @@
 import cv2
 import numpy as np
 import dlib
+import os
 
-detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+MODEL_FILENAME = "shape_predictor_68_face_landmarks.dat"
+
+_detector = None
+_predictor = None
+
+
+def _load_models():
+    """Load the dlib face detector and landmark predictor on first use.
+
+    Raises a clear error instead of crashing at import time when the
+    landmark model file is missing (it is not shipped with the repo).
+    """
+    global _detector, _predictor
+    if _detector is None or _predictor is None:
+        candidates = [
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), MODEL_FILENAME),
+            os.path.abspath(MODEL_FILENAME),  # backward compatible: old CWD-relative path
+        ]
+        model_path = next((p for p in candidates if os.path.exists(p)), None)
+        if model_path is None:
+            raise FileNotFoundError(
+                f"Required model file '{MODEL_FILENAME}' not found. Download it from "
+                "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2 "
+                "and place it next to face_swap_utils.py."
+            )
+        _detector = dlib.get_frontal_face_detector()
+        _predictor = dlib.shape_predictor(model_path)
+    return _detector, _predictor
 
 def extract_index_nparray(nparray):
     if nparray[0].size == 0:
@@ -11,14 +38,22 @@ def extract_index_nparray(nparray):
     return nparray[0][0]
 
 def face_swap(image1_path, image2_path, output_path):
+    detector, predictor = _load_models()
+
     img1 = cv2.imread(image1_path)
     img2 = cv2.imread(image2_path)
-    
+    if img1 is None:
+        raise ValueError(f"Could not read image: {image1_path}")
+    if img2 is None:
+        raise ValueError(f"Could not read image: {image2_path}")
+
     img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
     mask = np.zeros_like(img1_gray)
     faces = detector(img1_gray)
+    if len(faces) == 0:
+        raise ValueError("No face detected in the first image.")
 
     for face in faces:
         landmarks = predictor(img1_gray, face)

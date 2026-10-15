@@ -5,6 +5,13 @@
 </head>
 <body>
     <h1>Upload Two Faces to Swap</h1>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for msg in messages %}<li style="color: red;">{{ msg }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
     <form method="POST" enctype="multipart/form-data">
         <label>Image 1:</label><br>
         <input type="file" name="image1" required><br><br>
