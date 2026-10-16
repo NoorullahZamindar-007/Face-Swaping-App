@@ -72,7 +72,11 @@ def index():
             flash(f'Face swap failed: {exc}')
             return redirect(url_for('index'))
 
-        return render_template('index.html', result_image=result_path)
+        # Pass a static-relative path; the template used to split the
+        # absolute filesystem path on 'static/', which breaks on Windows
+        # (backslashes) and leaks the server directory layout.
+        result_image = 'result/' + os.path.basename(result_path)
+        return render_template('index.html', result_image=result_image)
 
     return render_template('index.html', result_image=None)
 
