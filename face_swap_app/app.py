@@ -4,7 +4,12 @@ from face_swap_utils import face_swap
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret-key"  # required for flash messages
+# Session-signing key comes from the environment; the fallback is only for
+# local development. Set SECRET_KEY in production - the default key lets
+# anyone forge session cookies.
+app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key")
+# Reject oversized uploads before they are read into memory (16 MB default cap).
+app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_UPLOAD_MB", "16")) * 1024 * 1024
 
 # Absolute folders next to this file, created on startup, so uploads never
 # fail with FileNotFoundError on a fresh clone (old code used CWD-relative
@@ -22,6 +27,14 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp', 'webp'}
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.errorhandler(413)
+def upload_too_large(_error):
+    """Oversized upload: explain the limit instead of a bare 413 page."""
+    max_mb = app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)
+    flash(f"Image too large - please keep each upload under {max_mb} MB.")
+    return redirect(url_for("index"))
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -65,4 +78,5 @@ def index():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Debug mode only when explicitly enabled; never in production.
+    app.run(debug=os.environ.get("FLASK_DEBUG", "0") == "1")
