@@ -89,5 +89,8 @@ def face_swap(image1_path, image2_path, output_path):
             if index_pt1 is not None and index_pt2 is not None and index_pt3 is not None:
                 indexes_triangles.append([index_pt1, index_pt2, index_pt3])
 
-        # For simplicity, just save the masked face for now
-        cv2.imwrite(output_path, face_image_1)
+        # For simplicity, just save the masked face for now.
+        # imwrite returns False (it does not raise) when the disk is full
+        # or the path is unwritable, so verify it before claiming success.
+        if not cv2.imwrite(output_path, face_image_1):
+            raise IOError(f"Could not write the swapped image to: {output_path}")
