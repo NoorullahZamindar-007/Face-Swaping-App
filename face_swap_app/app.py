@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import os
+import time
 from face_swap_utils import face_swap
 from werkzeug.utils import secure_filename
 
@@ -19,6 +20,36 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 RESULT_FOLDER = os.path.join(BASE_DIR, 'static', 'result')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULT_FOLDER, exist_ok=True)
+
+# Uploaded face photos are sensitive and pile up forever on a
+# long-running server. Delete files older than a day on startup so the
+# app does not hoard user photos (or fill the disk). The window is
+# configurable via UPLOAD_RETENTION_SECONDS; the current result image is
+# always fresh, so it is never touched by the prune.
+STALE_FILE_MAX_AGE_SECONDS = int(os.environ.get("UPLOAD_RETENTION_SECONDS", str(24 * 3600)))
+
+
+def _prune_stale_files(folder, max_age_seconds):
+    """Delete files in *folder* older than *max_age_seconds*; return the count."""
+    removed = 0
+    now = time.time()
+    try:
+        names = os.listdir(folder)
+    except OSError:
+        return 0
+    for name in names:
+        path = os.path.join(folder, name)
+        try:
+            if os.path.isfile(path) and now - os.path.getmtime(path) > max_age_seconds:
+                os.remove(path)
+                removed += 1
+        except OSError:
+            continue
+    return removed
+
+
+_prune_stale_files(UPLOAD_FOLDER, STALE_FILE_MAX_AGE_SECONDS)
+_prune_stale_files(RESULT_FOLDER, STALE_FILE_MAX_AGE_SECONDS)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['RESULT_FOLDER'] = RESULT_FOLDER
 
