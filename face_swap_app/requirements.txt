@@ -1,0 +1,5 @@
+# Runtime dependencies for the Flask face-swap app (face_swap_app/app.py)
+flask>=3.0
+opencv-python>=4.8
+numpy>=1.24
+dlib>=19.24

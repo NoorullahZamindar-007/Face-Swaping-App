@@ -1,83 +1,76 @@
-   # Face-Swaping-App
-face_swap_app using flask                         
-Here’s a professional and clean `README.md` file for your **Face Swap** project to upload to GitHub:
-        
----                                       
-                                     
-``markdown                                                                  
-# Face Swap using Dlib and OpenCV                    
+# Face Swap using Dlib and OpenCV
 
-This project demonstrates a basic **face swapping** application using Python, OpenCV, and Dlib. It detects facial landmarks and performs a basic face mask transfer between two input images.                   
-                                                                                                                                                                                                                                                                                                                              
-``                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-                                                                                                                                                                                                                                                                                                                                                                                                                                           
-├── Face_Swap.ipynb           # Jupyter Notebook demonstrating face swapping                                                                               
-                                                                                                                                              
-├── face_swap_utils.py        # Python utility functions for face detection and swapping                                                                                                                                                                                                                                                                                     
-                                                                                      
-├── Documentation.docx        # Brief overview of the methodology                                                                                                                                                         
-                                                                                                                                                                     
-└── shape_predictor_68_face_landmarks.dat  # Required model (Not included due to size)                                                                           
-                                    
-``                                   
-                                       
-## ⚙️ Features
+A Flask web app that detects faces with `dlib`'s 68-point facial landmark model
+and performs a basic face-mask transfer between two uploaded images.
 
-- Detect faces using `dlib`'s HOG-based face detector   
+## Project structure
+
+```
+Face-Swaping-App/
+├── face_swap_app/
+│   ├── app.py                # Flask app: upload form, validation, swap route
+│   ├── face_swap_utils.py    # Face detection / landmark / mask utilities
+│   ├── requirements.txt      # Python dependencies
+│   ├── templates/
+│   │   └── index.html        # Upload form and result page
+│   └── Face_Swap.ipynb       # Jupyter Notebook demonstrating the technique
+└── README.md
+```
+
+## Setup
+
+1. Install dependencies:
+
+   ```bash
+   pip install -r face_swap_app/requirements.txt
+   ```
+
+2. Download the landmark model (not shipped with the repo, ~100 MB):
+
+   http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
+
+   Extract it and place `shape_predictor_68_face_landmarks.dat` next to
+   `face_swap_app/face_swap_utils.py`.
+
+3. Run the app:
+
+   ```bash
+   cd face_swap_app
+   python app.py
+   ```
+
+   Open http://127.0.0.1:5000, upload two face photos, and submit.
+
+## Configuration (environment variables)
+
+| Variable                   | Default | Purpose                                          |
+|----------------------------|---------|--------------------------------------------------|
+| `SECRET_KEY`               | dev key | Flask session signing key (set a real one in production) |
+| `MAX_UPLOAD_MB`            | `16`    | Maximum size per uploaded image                  |
+| `UPLOAD_RETENTION_SECONDS` | `86400` | Uploads/results older than this are deleted on startup |
+| `FLASK_DEBUG`              | `0`     | Set to `1` to enable Flask debug mode locally    |
+
+## Features
+
+- Detect faces using `dlib`'s HOG-based face detector
 - Extract facial landmarks using the 68-point model
-- Perform Delaunay triangulation for accurate face mapping
-- Apply a face mask from one image to another
-- Output a partially swapped face image
+- Build a face mask with Delaunay triangulation of the landmarks
+- Upload validation (image types only, size cap, safe filenames)
+- Concurrent-safe uploads: files are stored under unique names
+- Uploaded and result images older than 24 h are pruned on startup
 
-## 🧠 Requirements
+## Limitations
 
-- Python 3.7+
-- OpenCV
-- Dlib
-- NumPy
-                   
-### Install dependencies
+- The current version only performs partial face transfer (a masked face
+  image), not a full warp-and-blend swap onto the second image.
+- The output is built from the first image only — the second image is
+  validated but not used in the current implementation.
 
-``bash
-pip install -r requirements.txt
-``
+## Author
 
-> Note: You need to download the `shape_predictor_68_face_landmarks.dat` file from [dlib's official model repository](http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2) and place it in the project directory.
+**Noorullah Zamindar**
+AI Developer | Python Enthusiast
 
-## 📝 Usage
+## License
 
-### Run from script
-``python
-from face_swap_utils import face_swap
-
-face_swap("image1.jpg", "image2.jpg", "output.jpg")
-``
-
-### Or use the Jupyter Notebook
-Open the notebook `Face_Swap.ipynb` and run the cells to see the step-by-step process.
-
-## 📚 Documentation
-
-Included in `Documentation.docx`:
-- Library Imports
-- Image loading and preprocessing
-- Landmark detection using Dlib
-- Face triangulation and masking
-
-## 🚧 Limitations
-
-- The current version only performs partial face transfer (masked image).
-- The complete warping and blending process can be implemented in future versions.
-
-## 👨‍💻 Author
-
-**Noorullah Zamindar**  
-Freelancer | AI Developer | Python Enthusiast
-
-## 📝 License
-
-This project is open-source and free to use under the MIT License.
-``
-
----
-
+MIT License.
