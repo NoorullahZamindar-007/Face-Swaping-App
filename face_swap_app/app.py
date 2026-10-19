@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 import time
+import uuid
 from face_swap_utils import face_swap
 from werkzeug.utils import secure_filename
 
@@ -60,6 +61,16 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def unique_filename(filename):
+    """Prefix the sanitized name with a short random id.
+
+    Two users uploading "photo.jpg" at the same time must not overwrite
+    each other's in-progress files, and the stale-file prune must not
+    delete a file another request is still writing.
+    """
+    return f"{uuid.uuid4().hex[:8]}_{filename}"
+
+
 @app.errorhandler(413)
 def upload_too_large(_error):
     """Oversized upload: explain the limit instead of a bare 413 page."""
@@ -85,8 +96,11 @@ def index():
             flash('Both uploads must be images (png, jpg, jpeg, bmp, webp).')
             return redirect(url_for('index'))
 
-        filename1 = secure_filename(file1.filename)
-        filename2 = secure_filename(file2.filename)
+        # Unique names so concurrent uploads with the same original
+        # filename (e.g. two users uploading "photo.jpg") do not
+        # overwrite each other.
+        filename1 = unique_filename(secure_filename(file1.filename))
+        filename2 = unique_filename(secure_filename(file2.filename))
         if not filename1 or not filename2:
             flash('Invalid file name, please rename the images and try again.')
             return redirect(url_for('index'))
@@ -96,7 +110,7 @@ def index():
         file1.save(path1)
         file2.save(path2)
 
-        result_path = os.path.join(app.config['RESULT_FOLDER'], 'swapped.jpg')
+        result_path = os.path.join(app.config['RESULT_FOLDER'], unique_filename('swapped.jpg'))
         try:
             face_swap(path1, path2, result_path)
         except Exception as exc:
