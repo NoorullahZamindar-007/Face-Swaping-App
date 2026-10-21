@@ -27,7 +27,16 @@ os.makedirs(RESULT_FOLDER, exist_ok=True)
 # app does not hoard user photos (or fill the disk). The window is
 # configurable via UPLOAD_RETENTION_SECONDS; the current result image is
 # always fresh, so it is never touched by the prune.
-STALE_FILE_MAX_AGE_SECONDS = int(os.environ.get("UPLOAD_RETENTION_SECONDS", str(24 * 3600)))
+def _env_int(name, default):
+    """Read an integer environment variable, falling back to *default* when
+    unset or malformed instead of crashing the app at startup."""
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+STALE_FILE_MAX_AGE_SECONDS = _env_int("UPLOAD_RETENTION_SECONDS", 24 * 3600)
 
 
 def _prune_stale_files(folder, max_age_seconds):
