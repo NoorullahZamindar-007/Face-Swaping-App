@@ -54,7 +54,7 @@ Face-Swaping-App/
 
 - Detect faces using `dlib`'s HOG-based face detector
 - Extract facial landmarks using the 68-point model
-- Build a face mask with Delaunay triangulation of the landmarks
+- Build a face mask from the convex hull of the facial landmarks
 - Upload validation (image types only, size cap, safe filenames)
 - Concurrent-safe uploads: files are stored under unique names
 - Uploaded and result images older than 24 h are pruned on startup
