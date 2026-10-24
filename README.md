@@ -7,6 +7,11 @@ and performs a basic face-mask transfer between two uploaded images.
 
 ```
 Face-Swaping-App/
+├── app.py                    # Mirror of face_swap_app/app.py (kept in sync;
+│                             # run the app from face_swap_app/ - the template
+│                             # folder lives there)
+├── face_swap_utils.py        # Mirror of face_swap_app/face_swap_utils.py
+│                             # (kept in sync)
 ├── face_swap_app/
 │   ├── app.py                # Flask app: upload form, validation, swap route
 │   ├── face_swap_utils.py    # Face detection / landmark / mask utilities
