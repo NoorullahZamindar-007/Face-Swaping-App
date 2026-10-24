@@ -108,11 +108,16 @@ def index():
         # Unique names so concurrent uploads with the same original
         # filename (e.g. two users uploading "photo.jpg") do not
         # overwrite each other.
-        filename1 = unique_filename(secure_filename(file1.filename))
-        filename2 = unique_filename(secure_filename(file2.filename))
-        if not filename1 or not filename2:
+        # unique_filename() always prefixes a random id, so the sanitized
+        # base name must be validated first - otherwise this check could
+        # never trigger (e.g. for names werkzeug strips to nothing).
+        base1 = secure_filename(file1.filename)
+        base2 = secure_filename(file2.filename)
+        if not base1 or not base2:
             flash('Invalid file name, please rename the images and try again.')
             return redirect(url_for('index'))
+        filename1 = unique_filename(base1)
+        filename2 = unique_filename(base2)
 
         path1 = os.path.join(app.config['UPLOAD_FOLDER'], filename1)
         path2 = os.path.join(app.config['UPLOAD_FOLDER'], filename2)
@@ -123,6 +128,13 @@ def index():
         try:
             face_swap(path1, path2, result_path)
         except Exception as exc:
+            # A failed swap must not leave orphan uploads behind for the
+            # startup prune to clean up hours later.
+            for stale in (path1, path2):
+                try:
+                    os.remove(stale)
+                except OSError:
+                    pass
             flash(f'Face swap failed: {exc}')
             return redirect(url_for('index'))
 
