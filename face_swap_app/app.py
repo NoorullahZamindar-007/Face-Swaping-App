@@ -10,8 +10,6 @@ app = Flask(__name__)
 # local development. Set SECRET_KEY in production - the default key lets
 # anyone forge session cookies.
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key")
-# Reject oversized uploads before they are read into memory (16 MB default cap).
-app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_UPLOAD_MB", "16")) * 1024 * 1024
 
 # Absolute folders next to this file, created on startup, so uploads never
 # fail with FileNotFoundError on a fresh clone (old code used CWD-relative
@@ -34,6 +32,12 @@ def _env_int(name, default):
         return int(os.environ.get(name, default))
     except (TypeError, ValueError):
         return default
+
+
+# Reject oversized uploads before they are read into memory (16 MB default
+# cap). Read through _env_int (not a bare int() cast) so a malformed
+# MAX_UPLOAD_MB value falls back to 16 instead of crashing startup.
+app.config["MAX_CONTENT_LENGTH"] = _env_int("MAX_UPLOAD_MB", 16) * 1024 * 1024
 
 
 STALE_FILE_MAX_AGE_SECONDS = _env_int("UPLOAD_RETENTION_SECONDS", 24 * 3600)
