@@ -55,6 +55,11 @@ def face_swap(image1_path, image2_path, output_path):
     faces = detector(img1_gray)
     if len(faces) == 0:
         raise ValueError("No face detected in the first image.")
+    # The swap needs a face in both images: without this check a
+    # faceless second image silently produced a masked first face
+    # presented as a "swap" instead of a clear error.
+    if len(detector(img2_gray)) == 0:
+        raise ValueError("No face detected in the second image.")
 
     for face in faces:
         landmarks = predictor(img1_gray, face)
