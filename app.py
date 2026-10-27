@@ -45,6 +45,12 @@ STALE_FILE_MAX_AGE_SECONDS = _env_int("UPLOAD_RETENTION_SECONDS", 24 * 3600)
 
 def _prune_stale_files(folder, max_age_seconds):
     """Delete files in *folder* older than *max_age_seconds*; return the count."""
+    # A negative retention window is invalid config, not "delete
+    # everything": now - mtime is always greater than a negative age,
+    # so without this guard a typo like -1 would wipe the folders
+    # on startup instead of pruning nothing.
+    if max_age_seconds is None or max_age_seconds < 0:
+        return 0
     removed = 0
     now = time.time()
     try:
