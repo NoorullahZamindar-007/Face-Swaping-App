@@ -131,8 +131,20 @@ def index():
 
         path1 = os.path.join(app.config['UPLOAD_FOLDER'], filename1)
         path2 = os.path.join(app.config['UPLOAD_FOLDER'], filename2)
-        file1.save(path1)
-        file2.save(path2)
+        # A failed save (disk full, unwritable folder) used to raise
+        # an unhandled 500 and could leave a half-written upload
+        # behind; report it cleanly and remove any partial file.
+        try:
+            file1.save(path1)
+            file2.save(path2)
+        except OSError:
+            for partial in (path1, path2):
+                try:
+                    os.remove(partial)
+                except OSError:
+                    pass
+            flash('Could not save the uploaded images. Please try again.')
+            return redirect(url_for('index'))
 
         result_path = os.path.join(app.config['RESULT_FOLDER'], unique_filename('swapped.jpg'))
         try:
