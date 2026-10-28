@@ -36,8 +36,13 @@ def _env_int(name, default):
 
 # Reject oversized uploads before they are read into memory (16 MB default
 # cap). Read through _env_int (not a bare int() cast) so a malformed
-# MAX_UPLOAD_MB value falls back to 16 instead of crashing startup.
-app.config["MAX_CONTENT_LENGTH"] = _env_int("MAX_UPLOAD_MB", 16) * 1024 * 1024
+# MAX_UPLOAD_MB value falls back to 16 instead of crashing startup. A
+# zero or negative value is likewise invalid config, not "reject every
+# upload" (or disable the cap): fall back to 16 there too.
+_max_upload_mb = _env_int("MAX_UPLOAD_MB", 16)
+if _max_upload_mb <= 0:
+    _max_upload_mb = 16
+app.config["MAX_CONTENT_LENGTH"] = _max_upload_mb * 1024 * 1024
 
 
 STALE_FILE_MAX_AGE_SECONDS = _env_int("UPLOAD_RETENTION_SECONDS", 24 * 3600)
