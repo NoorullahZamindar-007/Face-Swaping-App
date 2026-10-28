@@ -81,6 +81,24 @@ app.config['RESULT_FOLDER'] = RESULT_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp', 'webp'}
 
 
+def _user_facing_error(exc, *paths):
+    """Strip server filesystem paths out of an error message before it is
+    flashed to the browser.
+
+    face_swap errors quote the absolute upload/result paths ("Could not
+    read image: /srv/.../static/uploads/xxxx_photo.jpg"), and flashing
+    them verbatim would leak the server directory layout to any visitor
+    (the template previously had the same leak via absolute result
+    paths). Replace each known path with its basename; anything else in
+    the message is already user-safe text.
+    """
+    message = str(exc)
+    for path in paths:
+        if path:
+            message = message.replace(path, os.path.basename(path))
+    return message
+
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -162,7 +180,7 @@ def index():
                     os.remove(stale)
                 except OSError:
                     pass
-            flash(f'Face swap failed: {exc}')
+            flash(f'Face swap failed: {_user_facing_error(exc, path1, path2, result_path)}')
             return redirect(url_for('index'))
 
         # Pass a static-relative path; the template used to split the
