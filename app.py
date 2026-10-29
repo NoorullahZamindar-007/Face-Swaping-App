@@ -175,7 +175,7 @@ def index():
         except Exception as exc:
             # A failed swap must not leave orphan uploads behind for the
             # startup prune to clean up hours later.
-            for stale in (path1, path2):
+            for stale in (path1, path2, result_path):
                 try:
                     os.remove(stale)
                 except OSError:
@@ -186,6 +186,15 @@ def index():
         # Pass a static-relative path; the template used to split the
         # absolute filesystem path on 'static/', which breaks on Windows
         # (backslashes) and leaks the server directory layout.
+        # The swap output is already written: the source face photos
+        # are no longer needed and must not sit in the publicly
+        # served static folder until the next startup prune.
+        for uploaded in (path1, path2):
+            try:
+                os.remove(uploaded)
+            except OSError:
+                pass
+
         result_image = 'result/' + os.path.basename(result_path)
         return render_template('index.html', result_image=result_image)
 
