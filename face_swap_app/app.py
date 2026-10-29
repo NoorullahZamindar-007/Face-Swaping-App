@@ -123,6 +123,12 @@ def upload_too_large(_error):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # The startup-only prune never re-runs on a long-running
+    # server, so re-prune per request: only files older than
+    # the retention window are removed, so in-progress uploads
+    # and fresh results are never touched.
+    _prune_stale_files(UPLOAD_FOLDER, STALE_FILE_MAX_AGE_SECONDS)
+    _prune_stale_files(RESULT_FOLDER, STALE_FILE_MAX_AGE_SECONDS)
     if request.method == 'POST':
         # .get() instead of [] so a malformed form cannot raise KeyError
         file1 = request.files.get('image1')
