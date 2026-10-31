@@ -52,7 +52,7 @@ Face-Swaping-App/
 |----------------------------|---------|--------------------------------------------------|
 | `SECRET_KEY`               | dev key | Flask session signing key (set a real one in production) |
 | `MAX_UPLOAD_MB`            | `16`    | Maximum size per uploaded image                  |
-| `UPLOAD_RETENTION_SECONDS` | `86400` | Uploads/results older than this are deleted on startup |
+| `UPLOAD_RETENTION_SECONDS` | `86400` | Uploads/results older than this are deleted (on startup and on each request) |
 | `FLASK_DEBUG`              | `0`     | Set to `1` to enable Flask debug mode locally    |
 
 ## Features
@@ -62,7 +62,7 @@ Face-Swaping-App/
 - Build a face mask from the convex hull of the facial landmarks
 - Upload validation (image types only, size cap, safe filenames)
 - Concurrent-safe uploads: files are stored under unique names
-- Uploaded and result images older than 24 h are pruned on startup
+- Uploaded and result images older than 24 h are pruned on startup and on each request
 
 ## Limitations
 

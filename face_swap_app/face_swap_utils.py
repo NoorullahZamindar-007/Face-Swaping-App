@@ -73,10 +73,13 @@ def face_swap(image1_path, image2_path, output_path):
         convexhull = cv2.convexHull(points)
         cv2.fillConvexPoly(mask, convexhull, 255)
 
-        face_image_1 = cv2.bitwise_and(img1, img1, mask=mask)
+    face_image_1 = cv2.bitwise_and(img1, img1, mask=mask)
 
-        # For simplicity, just save the masked face for now.
-        # imwrite returns False (it does not raise) when the disk is full
-        # or the path is unwritable, so verify it before claiming success.
-        if not cv2.imwrite(output_path, face_image_1):
-            raise IOError(f"Could not write the swapped image to: {output_path}")
+    # Write once, after all faces are masked: writing inside the loop
+    # rewrote the file once per face (and left a half-masked image on
+    # disk if a later face failed), while the final file was always
+    # the cumulative mask computed here.
+    # imwrite returns False (it does not raise) when the disk is full
+    # or the path is unwritable, so verify it before claiming success.
+    if not cv2.imwrite(output_path, face_image_1):
+        raise IOError(f"Could not write the swapped image to: {output_path}")
