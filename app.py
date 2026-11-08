@@ -5,16 +5,24 @@ import uuid
 from face_swap_utils import face_swap
 from werkzeug.utils import secure_filename
 
-app = Flask(__name__)
+# Absolute folders next to this file, created on startup, so uploads never
+# fail with FileNotFoundError on a fresh clone (old code used CWD-relative
+# paths that were never created).
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# The repo keeps two copies of this app (root and face_swap_app/) but the
+# templates live only under face_swap_app/: the root copy used Flask's
+# default template folder, so every GET / raised TemplateNotFound. Point
+# Flask at the templates next to this file when they exist, else at the
+# face_swap_app/ copy, so both copies serve pages.
+_TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+if not os.path.isdir(_TEMPLATE_DIR):
+    _TEMPLATE_DIR = os.path.join(BASE_DIR, "face_swap_app", "templates")
+app = Flask(__name__, template_folder=_TEMPLATE_DIR)
 # Session-signing key comes from the environment; the fallback is only for
 # local development. Set SECRET_KEY in production - the default key lets
 # anyone forge session cookies.
 app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key")
 
-# Absolute folders next to this file, created on startup, so uploads never
-# fail with FileNotFoundError on a fresh clone (old code used CWD-relative
-# paths that were never created).
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 RESULT_FOLDER = os.path.join(BASE_DIR, 'static', 'result')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
