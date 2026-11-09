@@ -1,0 +1,17 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Uploaded face photos and swap results: created at runtime, and user
+# photos must never be committed (both app copies serve their own
+# static/ folders).
+static/uploads/
+static/result/
+face_swap_app/static/uploads/
+face_swap_app/static/result/
+
+# dlib 68-point landmark model (~100 MB, downloaded separately and not
+# shipped with the repo): must never be committed by accident.
+*.dat
