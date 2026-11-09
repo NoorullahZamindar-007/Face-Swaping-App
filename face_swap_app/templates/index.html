@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Face Swap</title>
 </head>
 <body>
@@ -22,7 +24,7 @@
 
     {% if result_image %}
         <h2>Result</h2>
-        <img src="{{ url_for('static', filename=result_image) }}" width="400" alt="Face swap result">
+        <img src="{{ url_for('static', filename=result_image) }}" width="400" style="max-width: 100%; height: auto;" alt="Face swap result">
     {% endif %}
 </body>
 </html>
