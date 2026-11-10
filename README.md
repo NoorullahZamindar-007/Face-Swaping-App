@@ -51,6 +51,8 @@ Face-Swaping-App/
 | Variable                   | Default | Purpose                                          |
 |----------------------------|---------|--------------------------------------------------|
 | `SECRET_KEY`               | dev key | Flask session signing key (set a real one in production) |
+| `PORT`                     | `5000`  | Port the app listens on (invalid or out-of-range values fall back to 5000) |
+| `FLASK_HOST`               | `127.0.0.1` | Host interface to bind                       |
 | `MAX_UPLOAD_MB`            | `16`    | Maximum size per uploaded image                  |
 | `UPLOAD_RETENTION_SECONDS` | `86400` | Uploads/results older than this are deleted (on startup and on each request) |
 | `FLASK_DEBUG`              | `0`     | Set to `1` to enable Flask debug mode locally    |

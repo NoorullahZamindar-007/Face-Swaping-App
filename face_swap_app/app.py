@@ -42,6 +42,23 @@ def _env_int(name, default):
         return default
 
 
+def _valid_port(port, default=5000):
+    """Return a usable TCP port, falling back to *default* when the
+    configured value is out of range.
+
+    A PORT of 0 asks the OS for a random port the user cannot find, and
+    a negative or >65535 value crashes app.run at startup; a typo like
+    70000 used to kill the app instead of starting on the default port.
+    """
+    try:
+        port = int(port)
+    except (TypeError, ValueError):
+        return default
+    if 1 <= port <= 65535:
+        return port
+    return default
+
+
 # Reject oversized uploads before they are read into memory (16 MB default
 # cap). Read through _env_int (not a bare int() cast) so a malformed
 # MAX_UPLOAD_MB value falls back to 16 instead of crashing startup. A
@@ -217,4 +234,12 @@ def index():
 
 if __name__ == "__main__":
     # Debug mode only when explicitly enabled; never in production.
-    app.run(debug=os.environ.get("FLASK_DEBUG", "0") == "1")
+    # Host/port are overridable so container and PaaS hosts that assign $PORT
+    # can start the app. A malformed PORT (e.g. "abc") falls back to 5000
+    # instead of crashing startup, and out-of-range values (0, negative,
+    # >65535) do the same: 0 would bind a random port the user cannot find.
+    app.run(
+        host=os.environ.get("FLASK_HOST", "127.0.0.1"),
+        port=_valid_port(_env_int("PORT", 5000)),
+        debug=os.environ.get("FLASK_DEBUG", "0") == "1",
+    )
