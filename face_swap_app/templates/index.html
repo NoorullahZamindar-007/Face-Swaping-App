@@ -25,6 +25,8 @@
     {% if result_image %}
         <h2>Result</h2>
         <img src="{{ url_for('static', filename=result_image) }}" width="400" style="max-width: 100%; height: auto;" alt="Face swap result">
+        <br>
+        <a href="{{ url_for('static', filename=result_image) }}" download="face-swap.jpg">Download result</a>
     {% endif %}
 </body>
 </html>

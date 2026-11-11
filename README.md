@@ -57,6 +57,23 @@ Face-Swaping-App/
 | `UPLOAD_RETENTION_SECONDS` | `86400` | Uploads/results older than this are deleted (on startup and on each request) |
 | `FLASK_DEBUG`              | `0`     | Set to `1` to enable Flask debug mode locally    |
 
+## Running tests
+
+```bash
+pip install pytest
+python -m pytest tests/
+```
+
+Or without pytest:
+
+```bash
+python tests/test_app_helpers.py
+```
+
+The suite covers upload validation, unique filenames, stale-file pruning,
+user-facing error messages, and port/env parsing — and runs without Flask,
+OpenCV, or dlib installed (they are stubbed out).
+
 ## Features
 
 - Detect faces using `dlib`'s HOG-based face detector
