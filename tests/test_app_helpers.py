@@ -140,11 +140,15 @@ def test_valid_port_rejects_out_of_range_values():
 
 
 def test_app_copies_stay_in_sync():
-    # The root files are kept-in-sync mirrors of face_swap_app/ by hand;
+    # face_swap_utils.py is still a hand-kept mirror of face_swap_app/;
     # a one-sided edit used to fail silently, so assert it loudly.
     root = Path(app.__file__).resolve().parent
-    for name in ("app.py", "face_swap_utils.py"):
-        assert (root / name).read_bytes() == (root / "face_swap_app" / name).read_bytes()
+    assert (root / "face_swap_utils.py").read_bytes() == (root / "face_swap_app" / "face_swap_utils.py").read_bytes()
+    # Root app.py is now a thin shim, not a second copy: it must serve
+    # the very same Flask app object as face_swap_app/app.py.
+    import face_swap_app.app as real_app
+
+    assert app.app is real_app.app
 
 
 def test_template_folder_points_at_real_templates():
