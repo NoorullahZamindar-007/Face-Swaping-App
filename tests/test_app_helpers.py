@@ -140,15 +140,32 @@ def test_valid_port_rejects_out_of_range_values():
 
 
 def test_app_copies_stay_in_sync():
-    # face_swap_utils.py is still a hand-kept mirror of face_swap_app/;
-    # a one-sided edit used to fail silently, so assert it loudly.
-    root = Path(app.__file__).resolve().parent
-    assert (root / "face_swap_utils.py").read_bytes() == (root / "face_swap_app" / "face_swap_utils.py").read_bytes()
     # Root app.py is now a thin shim, not a second copy: it must serve
     # the very same Flask app object as face_swap_app/app.py.
     import face_swap_app.app as real_app
 
     assert app.app is real_app.app
+
+
+def test_utils_shim_resolves_to_the_same_functions(monkeypatch):
+    # Root face_swap_utils.py used to be a hand-kept mirror of
+    # face_swap_app/face_swap_utils.py, guarded only by a byte-identity
+    # test. It is now a thin shim: it must expose the very same
+    # functions as the package module.
+    # The test module stubs face_swap_utils (for the app import above)
+    # and cv2/dlib are not installed in the test env, so stub them and
+    # load the real modules fresh for this check.
+    for name in ("cv2", "dlib"):
+        monkeypatch.setitem(sys.modules, name, types.ModuleType(name))
+    monkeypatch.delitem(sys.modules, "face_swap_utils", raising=False)
+    monkeypatch.delitem(sys.modules, "face_swap_app.face_swap_utils", raising=False)
+
+    import face_swap_app.face_swap_utils as real_utils
+    import face_swap_utils as root_utils
+
+    assert root_utils.face_swap is real_utils.face_swap
+    assert root_utils._load_models is real_utils._load_models
+    assert root_utils.MODEL_FILENAME == real_utils.MODEL_FILENAME
 
 
 def test_template_folder_points_at_real_templates():

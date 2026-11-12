@@ -1,85 +1,18 @@
-import cv2
-import numpy as np
-import dlib
+"""Thin re-export of the Face Swap utils.
+
+The real implementation lives in ``face_swap_app/face_swap_utils.py``; this file used
+to be a byte-identical duplicate kept in sync by hand, which drifted whenever one
+copy was edited without the other. Import the package module instead and re-export
+its namespace, so ``python app.py`` and ``python face_swap_app/app.py`` use the same
+``face_swap`` — which copy got imported used to depend on the launch directory.
+"""
 import os
-import threading
+import sys
 
-MODEL_FILENAME = "shape_predictor_68_face_landmarks.dat"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-_detector = None
-_predictor = None
-# The Flask dev server is threaded, so two concurrent first requests could
-# both see unloaded models and each load the (large) dlib predictor.
-_model_lock = threading.Lock()
+import face_swap_app.face_swap_utils as _real_utils
 
-
-def _load_models():
-    """Load the dlib face detector and landmark predictor on first use.
-
-    Raises a clear error instead of crashing at import time when the
-    landmark model file is missing (it is not shipped with the repo).
-    """
-    global _detector, _predictor
-    if _detector is None or _predictor is None:
-        with _model_lock:
-            if _detector is None or _predictor is None:
-                candidates = [
-                    os.path.join(os.path.dirname(os.path.abspath(__file__)), MODEL_FILENAME),
-                    os.path.abspath(MODEL_FILENAME),  # backward compatible: old CWD-relative path
-                ]
-                model_path = next((p for p in candidates if os.path.exists(p)), None)
-                if model_path is None:
-                    raise FileNotFoundError(
-                        f"Required model file '{MODEL_FILENAME}' not found. Download it from "
-                        "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2 "
-                        "and place it next to face_swap_utils.py."
-                    )
-                _detector = dlib.get_frontal_face_detector()
-                _predictor = dlib.shape_predictor(model_path)
-    return _detector, _predictor
-
-def face_swap(image1_path, image2_path, output_path):
-    detector, predictor = _load_models()
-
-    img1 = cv2.imread(image1_path)
-    img2 = cv2.imread(image2_path)
-    if img1 is None:
-        raise ValueError(f"Could not read image: {image1_path}")
-    if img2 is None:
-        raise ValueError(f"Could not read image: {image2_path}")
-
-    img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
-    img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-
-    mask = np.zeros_like(img1_gray)
-    faces = detector(img1_gray)
-    if len(faces) == 0:
-        raise ValueError("No face detected in the first image.")
-    # The swap needs a face in both images: without this check a
-    # faceless second image silently produced a masked first face
-    # presented as a "swap" instead of a clear error.
-    if len(detector(img2_gray)) == 0:
-        raise ValueError("No face detected in the second image.")
-
-    for face in faces:
-        landmarks = predictor(img1_gray, face)
-        landmarks_points = []
-        for n in range(0, 68):
-            x = landmarks.part(n).x
-            y = landmarks.part(n).y
-            landmarks_points.append((x, y))
-
-        points = np.array(landmarks_points, np.int32)
-        convexhull = cv2.convexHull(points)
-        cv2.fillConvexPoly(mask, convexhull, 255)
-
-    face_image_1 = cv2.bitwise_and(img1, img1, mask=mask)
-
-    # Write once, after all faces are masked: writing inside the loop
-    # rewrote the file once per face (and left a half-masked image on
-    # disk if a later face failed), while the final file was always
-    # the cumulative mask computed here.
-    # imwrite returns False (it does not raise) when the disk is full
-    # or the path is unwritable, so verify it before claiming success.
-    if not cv2.imwrite(output_path, face_image_1):
-        raise IOError(f"Could not write the swapped image to: {output_path}")
+for _name, _value in vars(_real_utils).items():
+    if not _name.startswith("__"):
+        globals()[_name] = _value
