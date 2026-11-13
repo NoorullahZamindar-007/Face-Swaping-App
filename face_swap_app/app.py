@@ -138,6 +138,30 @@ def unique_filename(filename):
     return f"{uuid.uuid4().hex[:8]}_{filename}"
 
 
+def same_upload(file1, file2):
+    """True when two uploaded files hold identical bytes.
+
+    Swapping a face with itself is not a swap: uploading the same photo
+    twice used to run the detector and render a masked copy of the first
+    image as a "result". Both streams are rewound afterwards so the
+    later .save() calls still write the full files. Reads are bounded by
+    MAX_CONTENT_LENGTH. Returns False when either stream cannot be read
+    or rewound, so a read failure never blocks a legitimate upload.
+    """
+    try:
+        data1 = file1.read()
+        data2 = file2.read()
+    except Exception:
+        return False
+    finally:
+        for f in (file1, file2):
+            try:
+                f.seek(0)
+            except Exception:
+                pass
+    return data1 == data2
+
+
 @app.errorhandler(413)
 def upload_too_large(_error):
     """Oversized upload: explain the limit instead of a bare 413 page."""
@@ -167,6 +191,9 @@ def index():
             return redirect(url_for('index'))
         if not allowed_file(file1.filename) or not allowed_file(file2.filename):
             flash('Both uploads must be images (png, jpg, jpeg, bmp, webp).')
+            return redirect(url_for('index'))
+        if same_upload(file1, file2):
+            flash('Please upload two different images.')
             return redirect(url_for('index'))
 
         # Unique names so concurrent uploads with the same original

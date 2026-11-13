@@ -6,6 +6,7 @@ the tests only exercise the pure helpers, never the camera/model code.
 Runnable with pytest or directly: ``python3 tests/test_app_helpers.py``.
 """
 
+import io
 import os
 import sys
 import time
@@ -137,6 +138,38 @@ def test_valid_port_rejects_out_of_range_values():
     assert app._valid_port(70000) == 5000
     assert app._valid_port("abc") == 5000
     assert app._valid_port(None) == 5000
+
+
+def test_same_upload_detects_identical_files_and_rewinds():
+    # Uploading the same photo twice used to run the swap and render a
+    # masked copy of the first image as a "result". The streams must be
+    # rewound afterwards, or the later .save() calls would write empty
+    # files.
+    first = io.BytesIO(b"fake-image-bytes")
+    second = io.BytesIO(b"fake-image-bytes")
+    assert app.same_upload(first, second) is True
+    assert first.read() == b"fake-image-bytes"
+    assert second.read() == b"fake-image-bytes"
+
+    assert app.same_upload(io.BytesIO(b"aaa"), io.BytesIO(b"bbb")) is False
+    assert app.same_upload(io.BytesIO(b"aaa"), io.BytesIO(b"aaaa")) is False
+
+
+class _UnreadableUpload(io.BytesIO):
+    def read(self, *args, **kwargs):
+        raise OSError("disk error")
+
+
+def test_same_upload_returns_false_when_a_stream_cannot_be_read():
+    # A read failure must never block a legitimate upload.
+    assert app.same_upload(_UnreadableUpload(b"aaa"), io.BytesIO(b"aaa")) is False
+    assert app.same_upload(io.BytesIO(b"aaa"), _UnreadableUpload(b"aaa")) is False
+
+
+def test_prune_stale_files_missing_folder_removes_nothing(tmp_path):
+    # A folder that does not exist (fresh clone, never uploaded) must
+    # not raise inside the per-request prune.
+    assert app._prune_stale_files(str(tmp_path / "no-such-folder"), 100) == 0
 
 
 def test_app_copies_stay_in_sync():
