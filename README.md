@@ -1,7 +1,11 @@
 # Face Swap using Dlib and OpenCV
 
 A Flask web app that detects faces with `dlib`'s 68-point facial landmark model
-and performs a basic face-mask transfer between two uploaded images.
+and swaps faces between two uploaded images: it Delaunay-triangulates the
+first image's landmarks, warps each triangle onto the matching triangle of
+the second face, and seamless-clones the result onto the second photo —
+the same pipeline demonstrated in `Face_Swap.ipynb`. The first image's
+face ends up on the second image.
 
 ## Project structure
 
@@ -14,7 +18,8 @@ Face-Swaping-App/
 │                             # face_swap_app/face_swap_utils.py
 ├── face_swap_app/
 │   ├── app.py                # Flask app: upload form, validation, swap route
-│   ├── face_swap_utils.py    # Face detection / landmark / mask utilities
+│   ├── face_swap_utils.py    # Face detection, landmark triangulation,
+│   │                         # triangle warp and seamless-clone swap
 │   ├── requirements.txt      # Python dependencies
 │   ├── templates/
 │   │   └── index.html        # Upload form and result page
