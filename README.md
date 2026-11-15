@@ -69,15 +69,18 @@ pip install pytest
 python -m pytest tests/
 ```
 
-Or without pytest:
+Or run a single file directly:
 
 ```bash
-python tests/test_app_helpers.py
+python tests/test_app_helpers.py      # no pytest needed
+python tests/test_face_swap_utils.py  # needs pytest and OpenCV installed
 ```
 
-The suite covers upload validation, unique filenames, stale-file pruning,
-user-facing error messages, and port/env parsing — and runs without Flask,
-OpenCV, or dlib installed (they are stubbed out).
+The suite covers the swap pipeline (triangulation, warping, blending),
+upload validation, unique filenames, stale-file pruning, user-facing
+error messages, and port/env parsing. `test_app_helpers.py` runs
+without Flask, OpenCV, or dlib installed (they are stubbed out);
+`test_face_swap_utils.py` needs OpenCV installed (dlib is stubbed).
 
 ## Features
 
@@ -90,10 +93,12 @@ OpenCV, or dlib installed (they are stubbed out).
 
 ## Limitations
 
-- The current version only performs partial face transfer (a masked face
-  image), not a full warp-and-blend swap onto the second image.
-- The output is built from the first image only — the second image is
-  validated but not used in the current implementation.
+- Only the first detected face in each photo is swapped; a group photo
+  swaps the most prominent face, not every face.
+- Works best on frontal, well-lit faces: the dlib HOG detector can miss
+  faces that are turned away, partly occluded, or very small.
+- The landmark model (~100 MB) must be downloaded separately; without it
+  the app reports a clear error instead of swapping.
 
 ## Author
 
