@@ -12,8 +12,8 @@ face ends up on the second image.
 ```
 Face-Swaping-App/
 ├── app.py                    # Thin shim importing face_swap_app/app.py
-│                             # (run the app from face_swap_app/ - the template
-│                             # folder lives there)
+│                             # (run from the repo root or from
+│                             # face_swap_app/ - both serve the same app)
 ├── face_swap_utils.py        # Thin shim re-exporting
 │                             # face_swap_app/face_swap_utils.py
 ├── face_swap_app/
@@ -42,10 +42,10 @@ Face-Swaping-App/
    Extract it and place `shape_predictor_68_face_landmarks.dat` next to
    `face_swap_app/face_swap_utils.py`.
 
-3. Run the app:
+3. Run the app (from the repo root, or from `face_swap_app/` — both
+   serve the same app):
 
    ```bash
-   cd face_swap_app
    python app.py
    ```
 
