@@ -4,29 +4,83 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Face Swap</title>
+    <style>
+        /* Small inline stylesheet (no external dependency): the page
+           used to be unstyled browser-default HTML. */
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            background: #f4f6f8;
+            color: #222;
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+        main {
+            max-width: 560px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+        h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
+        p.hint { color: #555; margin-top: 0; }
+        .messages { list-style: none; padding: 0; }
+        .messages li {
+            color: #b3261e;
+            background: #fdecea;
+            border: 1px solid #f5c6c2;
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        label { font-weight: 600; display: block; margin-bottom: 0.3rem; }
+        input[type="file"] { display: block; margin-bottom: 1.25rem; width: 100%; }
+        input[type="submit"] {
+            background: #1a73e8;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.7rem 1.4rem;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover { background: #1557b0; }
+        .result img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 0.5rem 0 1rem;
+        }
+    </style>
 </head>
 <body>
+  <main>
     <h1>Upload Two Faces to Swap</h1>
+    <p class="hint">The first image&rsquo;s face is swapped onto the second image.</p>
 {% with messages = get_flashed_messages() %}
   {% if messages %}
-    <ul>
-      {% for msg in messages %}<li style="color: red;">{{ msg }}</li>{% endfor %}
+    <ul class="messages">
+      {% for msg in messages %}<li>{{ msg }}</li>{% endfor %}
     </ul>
   {% endif %}
 {% endwith %}
     <form method="POST" enctype="multipart/form-data">
-        <label for="image1">Image 1:</label><br>
-        <input type="file" id="image1" name="image1" accept=".png,.jpg,.jpeg,.bmp,.webp" required><br><br>
-        <label for="image2">Image 2:</label><br>
-        <input type="file" id="image2" name="image2" accept=".png,.jpg,.jpeg,.bmp,.webp" required><br><br>
+        <label for="image1">Image 1 (face to use):</label>
+        <input type="file" id="image1" name="image1" accept=".png,.jpg,.jpeg,.bmp,.webp" required>
+        <label for="image2">Image 2 (photo to swap onto):</label>
+        <input type="file" id="image2" name="image2" accept=".png,.jpg,.jpeg,.bmp,.webp" required>
         <input type="submit" value="Swap Faces">
     </form>
 
     {% if result_image %}
+    <div class="result">
         <h2>Result</h2>
-        <img src="{{ url_for('static', filename=result_image) }}" width="400" style="max-width: 100%; height: auto;" alt="Face swap result">
-        <br>
+        <img src="{{ url_for('static', filename=result_image) }}" alt="Face swap result">
         <a href="{{ url_for('static', filename=result_image) }}" download="face-swap.jpg">Download result</a>
+    </div>
     {% endif %}
+  </main>
 </body>
 </html>
