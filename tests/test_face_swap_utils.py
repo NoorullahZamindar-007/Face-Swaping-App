@@ -49,8 +49,10 @@ class _FakePredictor:
 
     def __init__(self, points):
         self._points = points
+        self.faces = []
 
     def __call__(self, gray, face):
+        self.faces.append(face)
         return _FakeShape(self._points)
 
 
@@ -86,7 +88,9 @@ def _fake_models(monkeypatch, points=None, detector_results=None):
     detector = _FakeDetector(
         detector_results if detector_results is not None else [[object()], [object()]]
     )
-    monkeypatch.setattr(utils, "_load_models", lambda: (detector, _FakePredictor(points)))
+    predictor = _FakePredictor(points)
+    monkeypatch.setattr(utils, "_load_models", lambda: (detector, predictor))
+    return predictor
 
 
 def test_triangle_indices_cover_the_face():
@@ -150,6 +154,36 @@ def test_swap_puts_first_faces_pixels_onto_second_photo(tmp_path, monkeypatch):
     # Corner, outside the face hull: still the second photo's blue.
     blue, green, red = (int(v) for v in result[5, 5])
     assert blue > 200 and red < 20, (blue, green, red)
+
+
+class _FakeRect:
+    """Stand-in for a dlib rectangle, carrying only its area."""
+
+    def __init__(self, area):
+        self._area = area
+
+    def area(self):
+        return self._area
+
+
+def test_swap_uses_the_largest_detected_face(tmp_path, monkeypatch):
+    # dlib lists faces in no particular order: the swap must use the
+    # most prominent (largest) face in each photo, not whichever came
+    # first — the detector returns the big face second for the first
+    # photo and first for the second.
+    first = tmp_path / "first.jpg"
+    second = tmp_path / "second.jpg"
+    _write_solid_image(first, (0, 0, 255))
+    _write_solid_image(second, (255, 0, 0))
+    small = _FakeRect(100)
+    big = _FakeRect(10000)
+    predictor = _fake_models(
+        monkeypatch, detector_results=[[small, big], [big, small]]
+    )
+
+    utils.face_swap(str(first), str(second), str(tmp_path / "out.jpg"))
+
+    assert predictor.faces == [big, big]
 
 
 def test_swap_rejects_unreadable_images(tmp_path, monkeypatch):

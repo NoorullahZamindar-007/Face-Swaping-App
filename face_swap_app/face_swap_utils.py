@@ -119,6 +119,20 @@ def _warp_face_onto(img1, points1, img2, points2, triangles):
     return new_face
 
 
+def _largest_face(faces):
+    """The most prominent detected face: the largest by area.
+
+    dlib returns faces in no particular order, so the first face in a
+    group photo is not necessarily the biggest one. A face rectangle
+    without an area (or any unexpected shape) falls back to the first
+    face instead of failing the swap.
+    """
+    try:
+        return max(faces, key=lambda face: face.area())
+    except Exception:
+        return faces[0]
+
+
 def face_swap(image1_path, image2_path, output_path):
     """Put the first image's face onto the second image and save it.
 
@@ -152,11 +166,11 @@ def face_swap(image1_path, image2_path, output_path):
     if len(faces2) == 0:
         raise ValueError("No face detected in the second image.")
 
-    # The notebook triangulates one face per image: use the first face
-    # found in each, so a group photo swaps the most prominent face
-    # instead of looping over every face and overwriting the result.
-    points1 = _landmark_points(predictor, img1_gray, faces1[0])
-    points2 = _landmark_points(predictor, img2_gray, faces2[0])
+    # The notebook triangulates one face per image: use the largest
+    # face found in each, so a group photo swaps the most prominent
+    # face instead of whichever the detector happened to list first.
+    points1 = _landmark_points(predictor, img1_gray, _largest_face(faces1))
+    points2 = _landmark_points(predictor, img2_gray, _largest_face(faces2))
     triangles = _triangle_indices(points1)
     if not triangles:
         raise ValueError("Could not triangulate the detected face.")
