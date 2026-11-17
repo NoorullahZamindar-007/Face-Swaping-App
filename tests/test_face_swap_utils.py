@@ -186,6 +186,63 @@ def test_swap_uses_the_largest_detected_face(tmp_path, monkeypatch):
     assert predictor.faces == [big, big]
 
 
+def test_downscale_for_swap_keeps_normal_photos_untouched():
+    # At or under the cap the image must pass through unmodified —
+    # normal photos are never re-sampled.
+    img = np.zeros((200, 300, 3), np.uint8)
+    assert utils._downscale_for_swap(img) is img
+    img = np.zeros((4000, 400, 3), np.uint8)
+    assert utils._downscale_for_swap(img) is img
+
+
+def test_downscale_for_swap_caps_the_long_edge():
+    img = np.zeros((100, 8000, 3), np.uint8)
+    assert utils._downscale_for_swap(img).shape == (50, 4000, 3)
+    img = np.zeros((6000, 300, 3), np.uint8)
+    assert utils._downscale_for_swap(img).shape == (4000, 200, 3)
+
+
+def test_swap_downscales_oversized_photos(tmp_path, monkeypatch):
+    # A phone photo 5000 px wide must not reach the detector at full
+    # size: the swap runs on the downscaled copy and the result is at
+    # most 4000 px on a side. Landmarks sit in a small disc around
+    # (2000, 40) so they still fit the downscaled 4000x80 image.
+    first = tmp_path / "first.png"
+    second = tmp_path / "second.png"
+    output = tmp_path / "swapped.png"
+    img = np.full((100, 5000, 3), (255, 0, 0), np.uint8)
+    cv2.circle(img, (2000, 40), 35, (0, 0, 255), -1)
+    for x in range(1970, 2031, 10):
+        cv2.line(img, (x, 10), (x, 70), (0, 0, 128), 2)
+    for y in range(10, 71, 10):
+        cv2.line(img, (1970, y), (2030, y), (0, 0, 128), 2)
+    assert cv2.imwrite(str(first), img)
+    img2 = np.full((100, 5000, 3), (255, 0, 0), np.uint8)
+    assert cv2.imwrite(str(second), img2)
+
+    points = []
+    # Landmarks are in the *downscaled* image's coordinates: the app
+    # detects on the 4000x80 copy, so the face disc drawn at (2000, 40)
+    # in the 5000 px original sits at (1600, 32) after the 0.8 scale.
+    for n in range(68):
+        angle = 2 * math.pi * n / 68
+        radius = 16 + 8 * (n % 3)
+        points.append(
+            (int(1600 + radius * math.cos(angle)), int(32 + radius * math.sin(angle)))
+        )
+    _fake_models(monkeypatch, points=points)
+
+    utils.face_swap(str(first), str(second), str(output))
+
+    result = cv2.imread(str(output))
+    assert result is not None
+    assert result.shape == (80, 4000, 3)
+    blue, green, red = (int(v) for v in result[32, 1600])
+    assert red > 40, (blue, green, red)
+    blue, green, red = (int(v) for v in result[5, 5])
+    assert blue > 200 and red < 20, (blue, green, red)
+
+
 def test_swap_rejects_unreadable_images(tmp_path, monkeypatch):
     second = tmp_path / "second.jpg"
     _write_solid_image(second, (255, 0, 0))

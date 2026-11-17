@@ -94,6 +94,8 @@ without Flask, OpenCV, or dlib installed (they are stubbed out);
 ## Limitations
 
 - Only the largest (most prominent) detected face in each photo is swapped.
+- Photos larger than 4000 px on the long edge are downscaled before
+  swapping, so the result is at most 4000 px on a side.
 - Works best on frontal, well-lit faces: the dlib HOG detector can miss
   faces that are turned away, partly occluded, or very small.
 - The landmark model (~100 MB) must be downloaded separately; without it

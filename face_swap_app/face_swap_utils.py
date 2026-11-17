@@ -6,6 +6,13 @@ import threading
 
 MODEL_FILENAME = "shape_predictor_68_face_landmarks.dat"
 
+# Phone photos can be 8000+ px on a side: the HOG detector and the
+# per-triangle warp crawl on that many pixels, and the pipeline holds
+# several full-size copies in memory. Downscale anything over this
+# (long edge) before detecting — normal photos pass through untouched
+# and the result stays web-sized.
+MAX_SWAP_DIMENSION = 4000
+
 _detector = None
 _predictor = None
 # The Flask dev server is threaded, so two concurrent first requests could
@@ -119,6 +126,24 @@ def _warp_face_onto(img1, points1, img2, points2, triangles):
     return new_face
 
 
+def _downscale_for_swap(img):
+    """Downscale *img* so its longest side is at most MAX_SWAP_DIMENSION.
+
+    Returns the original image unchanged when it already fits, so
+    normal photos are never re-sampled.
+    """
+    height, width = img.shape[:2]
+    longest = max(height, width)
+    if longest <= MAX_SWAP_DIMENSION:
+        return img
+    scale = MAX_SWAP_DIMENSION / longest
+    return cv2.resize(
+        img,
+        (round(width * scale), round(height * scale)),
+        interpolation=cv2.INTER_AREA,
+    )
+
+
 def _largest_face(faces):
     """The most prominent detected face: the largest by area.
 
@@ -152,6 +177,11 @@ def face_swap(image1_path, image2_path, output_path):
         raise ValueError(f"Could not read image: {image1_path}")
     if img2 is None:
         raise ValueError(f"Could not read image: {image2_path}")
+
+    # Downscale before detecting: a 16 MB upload can still be an
+    # 8000+ px phone photo, and the detector/warp would crawl on it.
+    img1 = _downscale_for_swap(img1)
+    img2 = _downscale_for_swap(img2)
 
     img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
