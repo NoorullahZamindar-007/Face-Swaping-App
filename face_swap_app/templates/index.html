@@ -58,7 +58,7 @@
 <body>
   <main>
     <h1>Upload Two Faces to Swap</h1>
-    <p class="hint">The first image&rsquo;s face is swapped onto the second image.</p>
+    <p class="hint">The first image&rsquo;s face is swapped onto the second image. Each image must be under {{ max_upload_mb }} MB.</p>
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <ul class="messages">

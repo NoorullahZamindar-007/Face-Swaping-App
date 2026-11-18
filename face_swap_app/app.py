@@ -254,9 +254,13 @@ def index():
                 pass
 
         result_image = 'result/' + os.path.basename(result_path)
-        return render_template('index.html', result_image=result_image)
+        return render_template(
+            'index.html', result_image=result_image, max_upload_mb=_max_upload_mb
+        )
 
-    return render_template('index.html', result_image=None)
+    return render_template(
+        'index.html', result_image=None, max_upload_mb=_max_upload_mb
+    )
 
 
 if __name__ == "__main__":
