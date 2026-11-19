@@ -137,9 +137,12 @@ def _downscale_for_swap(img):
     if longest <= MAX_SWAP_DIMENSION:
         return img
     scale = MAX_SWAP_DIMENSION / longest
+    # Rounding can hit 0 for a very thin photo (e.g. 8000x1 px scales
+    # the 1 px side to 0), and cv2.resize raises on a zero dimension;
+    # clamp each side to at least 1 px so the swap still runs.
     return cv2.resize(
         img,
-        (round(width * scale), round(height * scale)),
+        (max(1, round(width * scale)), max(1, round(height * scale))),
         interpolation=cv2.INTER_AREA,
     )
 

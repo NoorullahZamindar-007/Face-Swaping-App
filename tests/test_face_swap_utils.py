@@ -202,6 +202,16 @@ def test_downscale_for_swap_caps_the_long_edge():
     assert utils._downscale_for_swap(img).shape == (4000, 200, 3)
 
 
+def test_downscale_for_swap_never_produces_a_zero_dimension():
+    # Rounding the short side can hit 0 for a very thin photo (8000x1
+    # scales the 1 px side to 0), and cv2.resize raises on a zero
+    # dimension — the swap must still run on a 1 px-wide result.
+    img = np.zeros((8000, 1, 3), np.uint8)
+    assert utils._downscale_for_swap(img).shape == (4000, 1, 3)
+    img = np.zeros((1, 8000, 3), np.uint8)
+    assert utils._downscale_for_swap(img).shape == (1, 4000, 3)
+
+
 def test_swap_downscales_oversized_photos(tmp_path, monkeypatch):
     # A phone photo 5000 px wide must not reach the detector at full
     # size: the swap runs on the downscaled copy and the result is at
