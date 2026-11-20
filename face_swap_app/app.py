@@ -64,10 +64,14 @@ def _valid_port(port, default=5000):
 # MAX_UPLOAD_MB value falls back to 16 instead of crashing startup. A
 # zero or negative value is likewise invalid config, not "reject every
 # upload" (or disable the cap): fall back to 16 there too.
+# MAX_CONTENT_LENGTH caps the whole multipart request, not one file, so
+# it must allow two per-image limits plus multipart overhead: capping it
+# at one limit rejected two legal images whose combined size exceeded it.
+# The per-file check in index() enforces the promised per-image limit.
 _max_upload_mb = _env_int("MAX_UPLOAD_MB", 16)
 if _max_upload_mb <= 0:
     _max_upload_mb = 16
-app.config["MAX_CONTENT_LENGTH"] = _max_upload_mb * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = (2 * _max_upload_mb * 1024 * 1024) + 65536
 
 
 STALE_FILE_MAX_AGE_SECONDS = _env_int("UPLOAD_RETENTION_SECONDS", 24 * 3600)
@@ -128,6 +132,56 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def _file_exceeds_limit(file, max_bytes):
+    """True when an uploaded file is over max_bytes.
+
+    The stream is rewound afterwards so the later .save() still writes
+    the full file. Returns False when the size cannot be determined, so
+    a read failure never blocks a legitimate upload.
+    """
+    try:
+        file.seek(0, os.SEEK_END)
+        size = file.tell()
+        file.seek(0)
+    except Exception:
+        return False
+    return size > max_bytes
+
+
+# Magic signatures for the extensions allowed_file() accepts, so a text
+# file renamed to photo.jpg is caught here instead of failing late in
+# face_swap with a misleading "Could not read image". WebP needs the
+# "WEBP" marker at offset 8; the others are plain prefixes.
+_IMAGE_MAGIC = (
+    b"\xff\xd8\xff",  # JPEG
+    b"\x89PNG\r\n\x1a\n",  # PNG
+    b"BM",  # BMP
+)
+
+
+def _is_valid_image_stream(file):
+    """True when the stream starts with a known image magic signature.
+
+    An empty upload has no signature and is rejected, so two empty files
+    no longer trip the same_upload check first and wrongly report
+    "Please upload two different images". The stream is rewound
+    afterwards so the later .save() still writes the full file.
+    Returns False when the stream cannot be read, so a read failure
+    never blocks a legitimate upload.
+    """
+    try:
+        file.seek(0)
+        header = file.read(12)
+        file.seek(0)
+    except Exception:
+        return False
+    if not header:
+        return False
+    if header.startswith(_IMAGE_MAGIC):
+        return True
+    return header.startswith(b"RIFF") and header[8:12] == b"WEBP"
+
+
 def unique_filename(filename):
     """Prefix the sanitized name with a short random id.
 
@@ -165,8 +219,7 @@ def same_upload(file1, file2):
 @app.errorhandler(413)
 def upload_too_large(_error):
     """Oversized upload: explain the limit instead of a bare 413 page."""
-    max_mb = app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)
-    flash(f"Image too large - please keep each upload under {max_mb} MB.")
+    flash(f"Image too large - please keep each upload under {_max_upload_mb} MB.")
     return redirect(url_for("index"))
 
 
@@ -191,6 +244,19 @@ def index():
             return redirect(url_for('index'))
         if not allowed_file(file1.filename) or not allowed_file(file2.filename):
             flash('Both uploads must be images (png, jpg, jpeg, bmp, webp).')
+            return redirect(url_for('index'))
+        # MAX_CONTENT_LENGTH caps the whole request, so enforce the
+        # promised per-image limit here, before anything is saved.
+        max_bytes = _max_upload_mb * 1024 * 1024
+        if _file_exceeds_limit(file1, max_bytes) or _file_exceeds_limit(file2, max_bytes):
+            flash(f'Each image must be under {_max_upload_mb} MB.')
+            return redirect(url_for('index'))
+        # Extension-only validation let a renamed text file through to
+        # face_swap; check the magic bytes before the same_upload check,
+        # so empty files report "not a valid image" instead of
+        # "two different images".
+        if not _is_valid_image_stream(file1) or not _is_valid_image_stream(file2):
+            flash('That file is not a valid image - please upload a real png/jpg/jpeg/bmp/webp photo.')
             return redirect(url_for('index'))
         if same_upload(file1, file2):
             flash('Please upload two different images.')
