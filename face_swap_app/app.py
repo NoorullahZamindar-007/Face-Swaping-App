@@ -223,6 +223,17 @@ def upload_too_large(_error):
     return redirect(url_for("index"))
 
 
+@app.errorhandler(404)
+def page_not_found(_error):
+    """Unknown URL: show the app's own error page, not Flask's bare 404."""
+    return render_template(
+        "error.html",
+        code=404,
+        title="Page not found",
+        message="That page does not exist on this app.",
+    ), 404
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     # The startup-only prune never re-runs on a long-running

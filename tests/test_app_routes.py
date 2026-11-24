@@ -106,6 +106,17 @@ def test_get_index_shows_upload_limit(client):
     assert b"under 16 MB" in response.data
 
 
+def test_missing_page_renders_error_page(client):
+    # Any unknown URL used to show Flask's bare 404 page instead of
+    # the app's own error page with a way back to the upload form.
+    response = client.get("/no-such-page")
+
+    assert response.status_code == 404
+    assert b"404" in response.data
+    assert b"Page not found" in response.data
+    assert b"Back to the face swap form" in response.data
+
+
 def test_post_missing_second_file_flashes(client):
     response = client.post(
         "/",

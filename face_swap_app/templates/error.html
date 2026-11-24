@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ code }} — {{ title }} · Face Swap</title>
+    <style>
+        /* Same small inline stylesheet as index.html: no external dependency. */
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            background: #f4f6f8;
+            color: #222;
+            margin: 0;
+            padding: 2rem 1rem;
+        }
+        main {
+            max-width: 560px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            text-align: center;
+        }
+        h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
+        p { color: #555; }
+        a { color: #1a73e8; }
+    </style>
+</head>
+<body>
+  <main>
+    <h1>{{ code }} — {{ title }}</h1>
+    <p>{{ message }}</p>
+    <a href="{{ url_for('index') }}">Back to the face swap form</a>
+  </main>
+</body>
+</html>
