@@ -22,7 +22,8 @@ Face-Swaping-App/
 │   │                         # triangle warp and seamless-clone swap
 │   ├── requirements.txt      # Python dependencies
 │   ├── templates/
-│   │   └── index.html        # Upload form and result page
+│   │   ├── index.html        # Upload form and result page
+│   │   └── error.html        # Branded 404/413/500 error page
 │   └── Face_Swap.ipynb       # Jupyter Notebook demonstrating the technique
 └── README.md
 ```
