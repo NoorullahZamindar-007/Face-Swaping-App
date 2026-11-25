@@ -39,6 +39,7 @@ if "flask" not in sys.modules:
 
     flask_stub.Flask = _Flask
     flask_stub.render_template = lambda *a, **k: ""
+    flask_stub.jsonify = lambda *a, **k: None
     flask_stub.request = types.SimpleNamespace(form={}, files={})
     flask_stub.redirect = lambda *a, **k: None
     flask_stub.url_for = lambda *a, **k: ""

@@ -206,6 +206,32 @@ def test_post_two_legal_images_combined_over_old_cap_succeeds(
     assert b"<h2>Result</h2>" in response.data
 
 
+def test_health_returns_ok(client):
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"status": "ok"}
+
+
+def test_server_error_renders_error_page(client, monkeypatch):
+    # An unhandled exception used to show Flask's bare 500 page
+    # instead of the app's own error page with a way back to the form.
+    # TESTING must be False for Flask to invoke the 500 handler
+    # instead of propagating the exception to the test.
+    def _boom():
+        raise RuntimeError("boom")
+
+    monkeypatch.setitem(app.view_functions, "index", _boom)
+    monkeypatch.setitem(app.config, "TESTING", False)
+
+    response = client.get("/")
+
+    assert response.status_code == 500
+    assert b"500" in response.data
+    assert b"Something went wrong" in response.data
+    assert b"Back to the face swap form" in response.data
+
+
 def test_post_over_request_limit_shows_413_message(client, monkeypatch):
     monkeypatch.setattr(app_module, "_max_upload_mb", 1)
     monkeypatch.setitem(app.config, "MAX_CONTENT_LENGTH", 100)

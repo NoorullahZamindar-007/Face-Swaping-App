@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash
 import os
 import time
 import uuid
@@ -232,6 +232,24 @@ def page_not_found(_error):
         title="Page not found",
         message="That page does not exist on this app.",
     ), 404
+
+
+@app.errorhandler(500)
+def server_error(_error):
+    """Unhandled exception: show the app's own error page, not Flask's bare 500."""
+    return render_template(
+        "error.html",
+        code=500,
+        title="Something went wrong",
+        message="An unexpected error occurred. Please try again.",
+    ), 500
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    """Liveness probe for PaaS/container hosts: always 200 while the
+    app is up."""
+    return jsonify({"status": "ok"}), 200
 
 
 @app.route('/', methods=['GET', 'POST'])
