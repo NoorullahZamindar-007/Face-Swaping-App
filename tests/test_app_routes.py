@@ -206,6 +206,17 @@ def test_post_two_legal_images_combined_over_old_cap_succeeds(
     assert b"<h2>Result</h2>" in response.data
 
 
+def test_post_health_returns_branded_405_page(client):
+    # /health only accepts GET: a POST used to show Flask's bare 405
+    # page instead of the app's own error page with a way back to the form.
+    response = client.post("/health")
+
+    assert response.status_code == 405
+    assert b"405" in response.data
+    assert b"Method not allowed" in response.data
+    assert b"Back to the face swap form" in response.data
+
+
 def test_health_returns_ok(client):
     response = client.get("/health")
 

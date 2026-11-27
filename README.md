@@ -23,7 +23,8 @@ Face-Swaping-App/
 │   ├── requirements.txt      # Python dependencies
 │   ├── templates/
 │   │   ├── index.html        # Upload form and result page
-│   │   └── error.html        # Branded 404/413/500 error page
+│   │   └── error.html        # Branded 404/405/500 error page (oversized
+│   │                         # uploads flash a message instead)
 │   └── Face_Swap.ipynb       # Jupyter Notebook demonstrating the technique
 └── README.md
 ```

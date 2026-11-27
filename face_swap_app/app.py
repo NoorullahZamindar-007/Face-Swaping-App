@@ -234,6 +234,18 @@ def page_not_found(_error):
     ), 404
 
 
+@app.errorhandler(405)
+def method_not_allowed(_error):
+    """Wrong-method request (e.g. POST to the GET-only /health probe):
+    show the app's own error page, not Flask's bare 405."""
+    return render_template(
+        "error.html",
+        code=405,
+        title="Method not allowed",
+        message="This page does not accept that request — use the face swap form instead.",
+    ), 405
+
+
 @app.errorhandler(500)
 def server_error(_error):
     """Unhandled exception: show the app's own error page, not Flask's bare 500."""
