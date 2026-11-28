@@ -12,6 +12,7 @@ upload/validation code under test.
 """
 
 import io
+import os
 import sys
 import types
 from pathlib import Path
@@ -204,6 +205,48 @@ def test_post_two_legal_images_combined_over_old_cap_succeeds(
 
     assert response.status_code == 200
     assert b"<h2>Result</h2>" in response.data
+
+
+def test_post_failed_swap_flashes_error_and_leaves_no_orphans(
+    client, monkeypatch
+):
+    # A failed swap (no face in one photo, a bad landmark file) must
+    # report the error instead of a bare 500 — and must not leave the
+    # uploaded face photos (or a half-written result) sitting in the
+    # publicly served static folders for the prune to find later.
+    def failing_swap(path1, path2, result_path):
+        raise ValueError("No face detected in the first image.")
+
+    monkeypatch.setattr(app_module, "face_swap", failing_swap)
+
+    response = client.post(
+        "/",
+        data=_files(("one.jpg", _jpeg(100, seed=b"A")), ("two.jpg", _jpeg(100, seed=b"B"))),
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Face swap failed" in response.data
+    assert b"No face detected in the first image." in response.data
+    assert os.listdir(app.config["UPLOAD_FOLDER"]) == []
+    assert os.listdir(app.config["RESULT_FOLDER"]) == []
+
+
+def test_post_successful_swap_removes_uploaded_photos(
+    client, monkeypatch, stub_swap
+):
+    # The swap output is already written when the route returns, so
+    # the source face photos must not stay in the publicly served
+    # static folder: only the result file may remain.
+    response = client.post(
+        "/",
+        data=_files(("one.jpg", _jpeg(100, seed=b"A")), ("two.jpg", _jpeg(100, seed=b"B"))),
+    )
+
+    assert response.status_code == 200
+    assert b"<h2>Result</h2>" in response.data
+    assert os.listdir(app.config["UPLOAD_FOLDER"]) == []
+    assert len(os.listdir(app.config["RESULT_FOLDER"])) == 1
 
 
 def test_post_health_returns_branded_405_page(client):
